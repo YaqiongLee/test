@@ -1,3 +1,21 @@
+#!/bin/python
+#
+# nightlyReport.py - nightly report script.
+#
+# Copyright (c) 2017 Wind River Systems, Inc.
+#
+# The right to copy, distribute, modify, or otherwise make use
+# of this software may be licensed only pursuant to the terms
+# of an applicable Wind River license agreement.
+#
+# modification history
+# --------------------
+# xxx  yli14  created
+
+# Description:
+# ============
+# This script generate nightly report html report 's data and export to dbase and json files.
+
 from __future__ import division
 import re
 import sys 
@@ -190,7 +208,6 @@ def getDataToDb():
     dateFormat = '/folk/yli14/test/dataFormat.sh'
     nightlyInputDb = "%s %s" % ('python3 /folk/yli14/test/genericScript.py -f /folk/yli14/test/ -p vx7 -d test_report -r xxx -t yli14 -s ', NIGHTLYSPIN[0])
     getTrendPic= 'wget -O /folk/yli14/test/' + dict['ltafrelease'] + '.png "http://pek-lpgtest3.wrs.com/ltaf/nightly_interface.php?release_name=' + dict['ltafrelease'] + '&f_type=chart&start_date=' + before15  + '&end_date=' + endTime + '"'
-#renameTrendPic = 'cp /folk/yli14/test/nightlyTrend.png /folk/yli14/test/' + dict['ltafrelease'] + '.png'
 
     if NIGHTLYSPIN: 
         os.system(cmdGetIni)
@@ -199,11 +216,9 @@ def getDataToDb():
         getPieValue()
         warnInsert()
         os.system(getTrendPic)
-#os.system(renameTrendPic)
         print dict
 
 # Entry point
-#os.system("python /folk/yli14/test/dawnJudge.py 14")
 print " ############# Entry Point ############"
 if (sys.argv[1] == '30'):
     getTodayInfo()
