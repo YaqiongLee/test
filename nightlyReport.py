@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python2.7
 #
 # nightlyReport.py - nightly report script.
 #
