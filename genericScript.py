@@ -57,6 +57,7 @@ def parseIniFile(arg, file):
             options = cf.options(s)
             dataDict['testsuite'] = s.split('Case')[1]
             confDict["time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            confDict["show"] = "no" 
             confDict["spin"] = arg.spin 
             for opt in options:
                 value = cf.get(s, opt)

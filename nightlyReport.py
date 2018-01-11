@@ -18,6 +18,7 @@
 
 from __future__ import division
 import re
+import time 
 import sys 
 import urllib 
 import json 
@@ -70,8 +71,10 @@ def getHtml(url):
     return html
 
 def getLogUrl(url):
+    print "getLogUrl entry"
     text = getHtml(url)
     url2 = re.findall('http\w*://.+?/*>', text)
+    print url2
     url = url2[2]
     logUrl = url.split('>')[0]
     return logUrl
@@ -118,8 +121,8 @@ def dicToJsonFile(load_dict):
 
 # get and ccpy toaday's bulid info
 def getTodayInfo():
-    configUrl = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/vx7_nightly_spin.config'
-    configUrlCi = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/vx7_ci_nightly_spin.config'
+#configUrl = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/vx7_nightly_spin.config'
+#configUrlCi = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/vx7_ci_nightly_spin.config'
     dict = {}
 
     page = urllib.urlopen(configUrl)
@@ -173,10 +176,13 @@ def getDataToDb():
     print NIGHTLYSPIN, lastS, LTAFRELEASE, timestamp 
     timestamp1 = timestamp[0]
     timestamp = timestamp1[0:8]
-    dict['nightlytime'] = timestamp
+    endTime = timestamp[0:4] + '-' + timestamp[4:6] + '-' + timestamp[6:8] 
+    dict['nightlytime'] = endTime 
     if NIGHTLYSPIN:
         dict['nightlyspin'] = NIGHTLYSPIN[0] 
         dict['commiturl'] = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/' + dict['nightlyspin'] + '_churn_email.html'
+        print "##########"
+        print dict['commiturl']
         dict['logUrl'] = getLogUrl(dict['commiturl'])
         dict['logBaseUrl'] = dict['logUrl'].split('index')[0]
     else:
@@ -190,6 +196,12 @@ def getDataToDb():
         print "vx7-SR0520-features"
         baseUrl = "http://ctu-hig4.wrs.com/folk/hzeng/CoverityRuns/662/Vx7-SR0520/"
         covBaseDir = "/net/ctu-rhfs1/ctu-rhfs03/home03/hzeng/CoverityRuns/662/Vx7-SR0520/"
+    elif LTAFRELEASE[0] == "vx7-SR0530-features":
+        print "vx7-SR0530-features"
+        print "\n vx7-SR0530-features 's coverity path ??????"
+        sys.exit(0)
+#baseUrl = "http://ctu-hig4.wrs.com/folk/hzeng/CoverityRuns/662/Vx7-SR0520/"
+#covBaseDir = "/net/ctu-rhfs1/ctu-rhfs03/home03/hzeng/CoverityRuns/662/Vx7-SR0520/"
     else:
         print "error ! "
         baseUrl = "code need be updated "
@@ -199,8 +211,8 @@ def getDataToDb():
     dict['covpngurl'] = baseUrl + dict['covnew'] + '.png';
     dict['ltafrelease'] = LTAFRELEASE[0] 
     dict["time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    dict['show'] = "yes" 
 
-    endTime = timestamp[0:4] + '-' + timestamp[4:6] + '-' + timestamp[6:8] 
     before15 = get15before()
     dict['trendurl'] = 'http://pek-lpgtest3.wrs.com/ltaf/nightly_interface.php?release_name=' + dict['ltafrelease'] + '&f_type=chart&start_date=' + before15 + '&end_date=' + endTime 
     dict['trendurlnew'] =  dict['ltafrelease'] + '.png'
@@ -208,32 +220,46 @@ def getDataToDb():
     dateFormat = '/folk/yli14/test/dataFormat.sh'
     nightlyInputDb = "%s %s" % ('python3 /folk/yli14/test/genericScript.py -f /folk/yli14/test/ -p vx7 -d test_report -r xxx -t yli14 -s ', NIGHTLYSPIN[0])
     getTrendPic= 'wget -O /folk/yli14/test/' + dict['ltafrelease'] + '.png "http://pek-lpgtest3.wrs.com/ltaf/nightly_interface.php?release_name=' + dict['ltafrelease'] + '&f_type=chart&start_date=' + before15  + '&end_date=' + endTime + '"'
+    getConfigFile= 'wget http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/vx7_nightly_spin.config -O /folk/yli14/test/configFilesHistory/' + endTime + '.html'
+    getConfigCiFile= 'wget http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/vx7_ci_nightly_spin.config -O /folk/yli14/test/configFilesHistory/' + endTime + 'Ci.html'
 
     if NIGHTLYSPIN: 
         os.system(cmdGetIni)
         os.system(dateFormat)
         os.system(nightlyInputDb)
+#time.sleep(3)
         getPieValue()
         warnInsert()
         os.system(getTrendPic)
+        os.system(getConfigFile)
+        os.system(getConfigCiFile)
         print dict
 
 # Entry point
+
+#configUrlBase = 'http://128.224.162.55/nightlyReport/'
+#configUrlBase = 'http://128.224.162.55/nightlyReport/lj/'
+configUrlBase = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/'
+configUrl = configUrlBase + 'vx7_nightly_spin.config'
+configUrlCi = configUrlBase + 'vx7_ci_nightly_spin.config'
+
 print " ############# Entry Point ############"
 if (sys.argv[1] == '30'):
     getTodayInfo()
     sys.exit(0)
 
+#configUrlBase = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/'
 dict = {}
 with open("/folk/yli14/test/runOrNot.json",'r+') as load_f:
     load_dict = json.load(load_f)
     print load_dict
 if (load_dict['getcfg1data'] == "yes"):
-    configUrl = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/vx7_nightly_spin.config'
+#configUrl = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/vx7_nightly_spin.config'
     getDataToDb()
     getTodayInfo()
 elif(load_dict['getcidata'] == "yes"):
-    configUrl = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/vx7_ci_nightly_spin.config'
+#configUrl = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/vx7_ci_nightly_spin.config'
+    configUrl = configUrlCi
     getDataToDb()
 else:
     print "both cfg1 and cfgci file's spin name is null, so nothing to do"
