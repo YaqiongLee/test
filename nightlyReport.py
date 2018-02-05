@@ -1,5 +1,5 @@
-#!/usr/bin/env python2.7
-#
+#!/usr/bin/env python
+# python2.7
 # nightlyReport.py - nightly report script.
 #
 # Copyright (c) 2017 Wind River Systems, Inc.
@@ -32,6 +32,9 @@ def get15before():
 
 def getCovNew(covBaseDir):
     base_dir = covBaseDir
+    result = os.path.exists(base_dir)
+    if result == False:
+        return None
     l=os.listdir(base_dir) 
     l.sort(key=lambda fn: os.path.getmtime(base_dir+fn) if not os.path.isdir(base_dir+fn) else 0) 
     d=datetime.datetime.fromtimestamp(os.path.getmtime(base_dir+l[-1])) 
@@ -165,6 +168,7 @@ def getTodayInfo():
     dicToJsonFile(dict)
     os.system("expect /folk/yli14/test/cp55.exp")
     os.system("cat /folk/yli14/test/runOrNot2.json")
+    return 0
 
 def getDataToDb():
     page = urllib.urlopen(configUrl)
@@ -181,6 +185,11 @@ def getDataToDb():
     if NIGHTLYSPIN:
         dict['nightlyspin'] = NIGHTLYSPIN[0] 
         dict['commiturl'] = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/' + dict['nightlyspin'] + '_churn_email.html'
+        urllibstatus=urllib.urlopen(dict['commiturl']).code
+        print urllibstatus
+        if urllibstatus == 404:
+            print "not exist commiturl "
+            return 0
         print "##########"
         print dict['commiturl']
         dict['logUrl'] = getLogUrl(dict['commiturl'])
@@ -198,10 +207,9 @@ def getDataToDb():
         covBaseDir = "/net/ctu-rhfs1/ctu-rhfs03/home03/hzeng/CoverityRuns/662/Vx7-SR0520/"
     elif LTAFRELEASE[0] == "vx7-SR0530-features":
         print "vx7-SR0530-features"
-        print "\n vx7-SR0530-features 's coverity path ??????"
-        sys.exit(0)
-#baseUrl = "http://ctu-hig4.wrs.com/folk/hzeng/CoverityRuns/662/Vx7-SR0520/"
-#covBaseDir = "/net/ctu-rhfs1/ctu-rhfs03/home03/hzeng/CoverityRuns/662/Vx7-SR0520/"
+        print "\n vx7-SR0530-features 's coverity path ??????###########################"
+        baseUrl = "http://ctu-hig4.wrs.com/folk/hzeng/CoverityRuns/871/VxWorks 7 Standard Release/"
+        covBaseDir = "/net/ctu-rhfs1/ctu-rhfs03/home03/hzeng/CoverityRuns/871/VxWorks 7 Standard Release/"
     else:
         print "error ! "
         baseUrl = "code need be updated "
@@ -257,7 +265,10 @@ if (load_dict['getcfg1data'] == "yes"):
 #configUrl = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/vx7_nightly_spin.config'
     getDataToDb()
     getTodayInfo()
-elif(load_dict['getcidata'] == "yes"):
+    print "1**************************************"
+#elif(load_dict['getcidata'] == "yes"):
+if (load_dict['getcidata'] == "yes"):
+    print "2**************************************"
 #configUrl = 'http://pek-vx-nightly1/buildarea1/pzhang1/jenkinsEnvInjection/vx7_ci_nightly_spin.config'
     configUrl = configUrlCi
     getDataToDb()
